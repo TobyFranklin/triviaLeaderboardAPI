@@ -16,6 +16,13 @@ if (fs.existsSync(SCORE_FILE)) {
   scores = JSON.parse(fs.readFileSync(SCORE_FILE));
 }
 
+app.get("/", (req, res) => {
+  const topScores = scores
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
+  res.json(topScores);
+});
+
 // GET leaderboard
 app.get("/scores", (req, res) => {
   const topScores = scores
