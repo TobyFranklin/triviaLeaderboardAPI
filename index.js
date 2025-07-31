@@ -17,7 +17,7 @@ if (fs.existsSync(SCORE_FILE)) {
 }
 
 // GET leaderboard
-app.get("/leaderboard", (req, res) => {
+app.get("/scores", (req, res) => {
   const topScores = scores
     .sort((a, b) => b.score - a.score)
     .slice(0, 20);
