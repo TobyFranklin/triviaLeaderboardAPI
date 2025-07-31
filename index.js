@@ -32,14 +32,14 @@ app.get("/scores", (req, res) => {
 });
 
 // POST new score
-app.post("/submit", (req, res) => {
-  const { name, score } = req.body;
+app.post("/scores", (req, res) => {
+  const { initials, score } = req.body;
 
-  if (typeof name !== "string" || typeof score !== "number") {
+  if (typeof initials !== "string" || typeof score !== "number") {
     return res.status(400).json({ error: "Invalid score data" });
   }
 
-  scores.push({ name, score });
+  scores.push({ initials, score });
   fs.writeFileSync(SCORE_FILE, JSON.stringify(scores, null, 2));
 
   res.json({ success: true });
