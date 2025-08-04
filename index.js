@@ -55,3 +55,16 @@ app.post("/player", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// DELETE all player data with a key
+app.delete("/reset", (req, res) => {
+  const authKey = req.query.key;
+
+  if (authKey !== "Trumpy1&") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  players = {};
+  fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2));
+  res.json({ success: true, message: "All player data has been cleared." });
+});
