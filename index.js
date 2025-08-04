@@ -1,63 +1,57 @@
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
-
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+const DATA_FILE = "./players.json";
 
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = "./playerData.json";
+let players = {};
+if (fs.existsSync(DATA_FILE)) {
+  players = JSON.parse(fs.readFileSync(DATA_FILE));
+}
 
-let players = fs.existsSync(DATA_FILE)
-  ? JSON.parse(fs.readFileSync(DATA_FILE))
-  : [];
-
-// GET all player scores (sorted)
-app.get("/scores", (req, res) => {
-  const topPlayers = players
-    .filter(p => p.score !== undefined)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 20);
-  res.json(topPlayers);
+// ✅ New: GET all player data as a list
+app.get("/", (req, res) => {
+  const allPlayers = Object.values(players);
+  res.json(allPlayers);
 });
 
-// GET individual player data
-app.get("/player/:playerId", (req, res) => {
-  const player = players.find(p => p.playerId === req.params.playerId);
-  if (!player) return res.status(404).json({ error: "Player not found" });
-  res.json(player);
+// GET individual player progress
+app.get("/player/:id", (req, res) => {
+  const playerId = req.params.id;
+  const data = players[playerId];
+
+  if (!data) {
+    return res.status(404).json({ error: "Player not found" });
+  }
+
+  res.json(data);
 });
 
-// POST or update player data
+// POST (create/update) player progress
 app.post("/player", (req, res) => {
-  const { playerId, initials, score, completed, answeredIndices } = req.body;
+  const { playerId, playerName, score, completed, questionsCompleted } = req.body;
 
-  if (
-    typeof playerId !== "string" ||
-    typeof initials !== "string" ||
-    typeof score !== "number" ||
-    typeof completed !== "boolean" ||
-    !Array.isArray(answeredIndices)
-  ) {
-    return res.status(400).json({ error: "Invalid player data" });
+  if (!playerId || !Array.isArray(questionsCompleted) || typeof completed !== "boolean") {
+    return res.status(400).json({ error: "Invalid progress data" });
   }
 
-  const existing = players.find(p => p.playerId === playerId);
-  if (existing) {
-    existing.initials = initials;
-    existing.score = score;
-    existing.completed = completed;
-    existing.answeredIndices = answeredIndices;
-  } else {
-    players.push({ playerId, initials, score, completed, answeredIndices });
-  }
+  players[playerId] = {
+    playerId,
+    playerName: playerName || "",
+    score: score || 0,
+    completed,
+    questionsCompleted
+  };
 
   fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2));
   res.json({ success: true });
 });
 
 app.listen(PORT, () => {
-  console.log(`Combined API running on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
