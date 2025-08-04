@@ -5,6 +5,7 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = "./players.json";
+const AUTH_KEY = "Buttersby";
 
 app.use(cors());
 app.use(express.json());
@@ -60,7 +61,7 @@ app.listen(PORT, () => {
 app.delete("/reset", (req, res) => {
   const authKey = req.query.key;
 
-  if (authKey !== "Trumpy1&") {
+  if (authKey !== AUTH_KEY) {
     return res.status(403).json({ error: "Forbidden" });
   }
 
