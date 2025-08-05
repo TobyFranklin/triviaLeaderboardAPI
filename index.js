@@ -17,10 +17,12 @@ if (fs.existsSync(DATA_FILE)) {
   players = JSON.parse(fs.readFileSync(DATA_FILE));
 }
 
-// ✅ Get all players
 app.get("/", (req, res) => {
   const allPlayers = Object.values(players);
-  res.json(allPlayers);
+  res.json({
+    saveEnabled,
+    players: allPlayers
+  });
 });
 
 app.get("/status", (req, res) => {
