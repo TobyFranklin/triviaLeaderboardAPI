@@ -87,3 +87,7 @@ app.delete("/reset", (req, res) => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2));
   res.json({ success: true, message: "All player data has been cleared." });
 });
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
