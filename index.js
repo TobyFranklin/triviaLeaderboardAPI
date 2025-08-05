@@ -11,17 +11,23 @@ app.use(cors());
 app.use(express.json());
 
 let players = {};
+let saveEnabled = true; // 🔧 Toggle this at runtime!
+
 if (fs.existsSync(DATA_FILE)) {
   players = JSON.parse(fs.readFileSync(DATA_FILE));
 }
 
-// ✅ New: GET all player data as a list
+// ✅ Get all players
 app.get("/", (req, res) => {
   const allPlayers = Object.values(players);
   res.json(allPlayers);
 });
 
-// GET individual player progress
+app.get("/status", (req, res) => {
+  res.json({ saveEnabled });
+});
+
+// ✅ Get individual player
 app.get("/player/:id", (req, res) => {
   const playerId = req.params.id;
   const data = players[playerId];
@@ -33,12 +39,16 @@ app.get("/player/:id", (req, res) => {
   res.json(data);
 });
 
-// POST (create/update) player progress
+// ✅ Save progress if enabled
 app.post("/player", (req, res) => {
   const { playerId, playerName, score, completed, questionsCompleted } = req.body;
 
   if (!playerId || !Array.isArray(questionsCompleted) || typeof completed !== "boolean") {
     return res.status(400).json({ error: "Invalid progress data" });
+  }
+
+  if (!saveEnabled) {
+    return res.status(503).json({ error: "Saving is currently disabled" });
   }
 
   players[playerId] = {
@@ -53,11 +63,19 @@ app.post("/player", (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+// ✅ Toggle saving on/off
+app.post("/toggle-save", (req, res) => {
+  const { key, enabled } = req.body;
+
+  if (key !== AUTH_KEY || typeof enabled !== "boolean") {
+    return res.status(403).json({ error: "Forbidden or invalid payload" });
+  }
+
+  saveEnabled = enabled;
+  res.json({ success: true, saveEnabled });
 });
 
-// DELETE all player data with a key
+// ✅ Reset all data
 app.delete("/reset", (req, res) => {
   const authKey = req.query.key;
 
