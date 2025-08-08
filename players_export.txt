@@ -1,0 +1,9 @@
+{
+  "228a9d85-cc27-4b4a-833e-e870e8133e8c": {
+    "playerId": "228a9d85-cc27-4b4a-833e-e870e8133e8c",
+    "playerName": "DoorDashUser4697",
+    "score": 0,
+    "completed": false,
+    "questionsCompleted": []
+  }
+}

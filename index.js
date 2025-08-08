@@ -94,23 +94,20 @@ app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-// ✅ Export player data to a .txt file
 app.get("/export", (req, res) => {
   const authKey = req.query.key;
-
   if (authKey !== AUTH_KEY) {
     return res.status(403).json({ error: "Forbidden" });
   }
 
-  const exportFile = "./players_export.txt";
-  const jsonData = JSON.stringify(players, null, 2);
+  // Make timestamped filename
+  const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const filename = `players_export_${dateStr}.txt`;
 
-  fs.writeFileSync(exportFile, jsonData, "utf8");
+  // Tell the client it's a file download
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.setHeader("Content-Type", "text/plain");
 
-  res.download(exportFile, "players_export.txt", (err) => {
-    if (err) {
-      console.error("Error sending file:", err);
-      res.status(500).send("Error downloading file");
-    }
-  });
+  // Send the JSON directly
+  res.send(JSON.stringify(players, null, 2));
 });
