@@ -93,3 +93,24 @@ app.delete("/reset", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// ✅ Export player data to a .txt file
+app.get("/export", (req, res) => {
+  const authKey = req.query.key;
+
+  if (authKey !== AUTH_KEY) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const exportFile = "./players_export.txt";
+  const jsonData = JSON.stringify(players, null, 2);
+
+  fs.writeFileSync(exportFile, jsonData, "utf8");
+
+  res.download(exportFile, "players_export.txt", (err) => {
+    if (err) {
+      console.error("Error sending file:", err);
+      res.status(500).send("Error downloading file");
+    }
+  });
+});
