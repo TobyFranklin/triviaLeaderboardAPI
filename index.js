@@ -41,11 +41,15 @@ app.get("/player/:id", (req, res) => {
   res.json(data);
 });
 
-// ✅ Save progress if enabled
 app.post("/player", (req, res) => {
-  const { playerId, playerName, score, completed, questionsCompleted } = req.body;
+  const { playerId, playerName, score, completed, questionsCompleted, timeOfCompletion } = req.body;
 
-  if (!playerId || !Array.isArray(questionsCompleted) || typeof completed !== "boolean") {
+  if (
+    !playerId || 
+    !Array.isArray(questionsCompleted) || 
+    typeof completed !== "boolean" ||
+    (timeOfCompletion && typeof timeOfCompletion !== "string")
+  ) {
     return res.status(400).json({ error: "Invalid progress data" });
   }
 
@@ -58,7 +62,8 @@ app.post("/player", (req, res) => {
     playerName: playerName || "",
     score: score || 0,
     completed,
-    questionsCompleted
+    questionsCompleted,
+    timeOfCompletion: timeOfCompletion || ""  // Add timeOfCompletion, default to empty string if missing
   };
 
   fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2));
