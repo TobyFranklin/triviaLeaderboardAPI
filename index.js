@@ -42,31 +42,46 @@ app.get("/player/:id", (req, res) => {
 });
 
 app.post("/player", (req, res) => {
-  const { playerId, playerName, score, completed, questionsCompleted, timeOfCompletion } = req.body;
+  const {
+    playerId,
+    playerName,
+    score,
+    completed,
+    questionsCompleted,
+    lastQuestionSeen,
+    timeOfCompletion
+  } = req.body;
 
+  // ✅ Validation
   if (
-    !playerId || 
-    !Array.isArray(questionsCompleted) || 
+    !playerId ||
+    !Array.isArray(questionsCompleted) ||
     typeof completed !== "boolean" ||
+    (typeof lastQuestionSeen !== "number" || !Number.isInteger(lastQuestionSeen)) ||
     (timeOfCompletion && typeof timeOfCompletion !== "string")
   ) {
     return res.status(400).json({ error: "Invalid progress data" });
   }
 
+  // ✅ Check if saving is enabled
   if (!saveEnabled) {
     return res.status(503).json({ error: "Saving is currently disabled" });
   }
 
+  // ✅ Save player data
   players[playerId] = {
     playerId,
     playerName: playerName || "",
     score: score || 0,
     completed,
     questionsCompleted,
-    timeOfCompletion: timeOfCompletion || ""  // Add timeOfCompletion, default to empty string if missing
+    lastQuestionSeen: typeof lastQuestionSeen === "number" ? lastQuestionSeen : -99,
+    timeOfCompletion: timeOfCompletion || ""
   };
 
+  // ✅ Write to file
   fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2));
+
   res.json({ success: true });
 });
 
